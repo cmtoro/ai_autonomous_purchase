@@ -1,0 +1,4 @@
+pyTelegramBotAPI
+langchain
+langchain-anthropic
+langchain-community
