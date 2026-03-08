@@ -29,3 +29,4 @@ export class App {
       this.backendStatus.set('unreachable');
     }
   }
+}
