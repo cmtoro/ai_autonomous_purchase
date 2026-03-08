@@ -1,7 +1,19 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # For MVP only
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/api/v1/health")
+def health_check():
+    return {"status": "online", "message": "Backend is reachable"}
 
 class Product(BaseModel):
     id: int

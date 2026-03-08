@@ -1,31 +1,38 @@
-name: Deploy to Google Cloud Run
+name: Global Deployment (Back & Front)
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  deploy:
+  deploy-backend:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
+      - uses: actions/checkout@v3
       - name: Auth Google Cloud
-        uses: 'google-github-actions/auth@v2'
+        uses: 'google-github-actions/auth@v1'
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
-
-      - name: Build and Push Container
+      - name: Build and Deploy Backend
         run: |
           gcloud auth configure-docker
-          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/purchase-app .
-          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/purchase-app
+          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/purchase-backend ./backend
+          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/purchase-backend
+          gcloud run deploy purchase-api --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/purchase-backend --region us-central1 --allow-unauthenticated
 
-      - name: Deploy to Cloud Run
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    needs: deploy-backend # Starts after backend is ready
+    steps:
+      - uses: actions/checkout@v3
+      - name: Auth Google Cloud
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+      - name: Build and Deploy Frontend
         run: |
-          gcloud run deploy purchase-app \
-            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/purchase-app \
-            --region us-central1 \
-            --platform managed \
-            --allow-unauthenticated
+          gcloud auth configure-docker
+          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/purchase-frontend ./frontend
+          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/purchase-frontend
+          BACKEND_URL=$(gcloud run services describe purchase-api --region us-central1 --format 'value(status.url)')
+          gcloud run deploy purchase-web --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/purchase-frontend --region us-central1 --allow-unauthenticated --set-env-vars BACKEND_URL=$BACKEND_URL

@@ -1,5 +1,6 @@
 import os
 import logging
+import subprocess
 from langchain_anthropic import ChatAnthropic
 # The LangChain API changed in recent versions. `initialize_agent` was removed and
 # tools are now constructed differently. We also import `Tool` from
@@ -49,6 +50,23 @@ def list_files(directory: str = "."):
     logger.info(f"Listed {len(file_list)} files")
     return result
 
+def deploy_changes(commit_message: str):
+    """
+    Commits all changes and pushes them to the remote repository 
+    to trigger the CI/CD pipeline.
+    """
+    try:
+        # Add all modified files
+        subprocess.run(["git", "add", "."], check=True)
+        # Create the commit
+        subprocess.run(["git", "commit", "-m", commit_message], check=True)
+        # Push to main branch
+        subprocess.run(["git", "push", "origin", "main"], check=True)
+        return "Deployment triggered: Changes pushed to GitHub successfully."
+    except Exception as e:
+        return f"Error during deployment: {str(e)}"
+
+
 # Create LangChain tools from the helper functions.  In the newer API,
 # we can either pass plain callables to `create_agent` or explicitly
 # wrap them with `Tool.from_function` to set names and descriptions.
@@ -70,13 +88,20 @@ tools = [
         name="list_contents",
         description="List all files in the repository to understand the project structure.",
     ),
+    Tool.from_function(
+        deploy_changes,
+        name="deploy_to_cloud",
+        description="Use this to push code and deploy.",
+    ),
 ]
 
 # System Instruction (Context Awareness)
 system_message = (
     "You are a Cloud Software Engineer and an expert Python developer. You have access to a repository "
-    "with a Python backend and Angular frontend. Always use 'list_files' "
-    "first to understand the project structure before editing any code."
+    "with a Python backend and Angular frontend. Your primary directive is to follow the "
+    "rules and architecture defined in 'PROJECT_GUIDELINES.md'. "
+    "MANDATORY STEP: Before any code modification, you MUST read 'PROJECT_GUIDELINES.md' "
+    "to ensure the change aligns with the project's objective and technical standards."
 )
 
 # The new entrypoint is `create_agent`.  It accepts a model instance or string,
