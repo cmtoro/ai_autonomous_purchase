@@ -12,7 +12,7 @@ RUN npm run build -- --configuration=production
 FROM nginx:alpine
 
 # Angular 17+ outputs to dist/<project>/browser
-COPY --from=build /app/dist/purchase-app/browser /usr/share/nginx/html
+COPY --from=build /app/dist/purchase-app /usr/share/nginx/html
 
 # Cloud Run sets $PORT (default 8080). Ensure nginx listens on it and inject Backend URL.
 RUN sed -i "s|API_URL_PLACEHOLDER|${BACKEND_URL:-API_URL_PLACEHOLDER}|g" /usr/share/nginx/html/*.js

@@ -32,7 +32,8 @@ jobs:
       - name: Build and Deploy Frontend
         run: |
           gcloud auth configure-docker
-          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/purchase-frontend ./frontend
-          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/purchase-frontend
+          IMAGE=gcr.io/${{ secrets.GCP_PROJECT_ID }}/purchase-frontend:${{ github.sha }}
+          docker build --no-cache -t $IMAGE ./frontend
+          docker push $IMAGE
           BACKEND_URL=$(gcloud run services describe purchase-api --region us-central1 --format 'value(status.url)')
-          gcloud run deploy purchase-web --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/purchase-frontend --region us-central1 --allow-unauthenticated --set-env-vars BACKEND_URL=$BACKEND_URL
+          gcloud run deploy purchase-web --image $IMAGE --region us-central1 --allow-unauthenticated --set-env-vars BACKEND_URL=$BACKEND_URL
