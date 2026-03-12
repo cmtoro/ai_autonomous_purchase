@@ -19,6 +19,8 @@ jobs:
           docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/purchase-backend ./backend
           docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/purchase-backend
           gcloud run deploy purchase-api --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/purchase-backend --region us-central1 --allow-unauthenticated
+          # Ensure public access to backend
+          gcloud run services add-iam-policy-binding purchase-api --region us-central1 --member=allUsers --role=roles/run.invoker
 
   deploy-frontend:
     runs-on: ubuntu-latest
@@ -35,7 +37,9 @@ jobs:
           IMAGE=gcr.io/${{ secrets.GCP_PROJECT_ID }}/purchase-frontend:${{ github.sha }}
           docker build --no-cache -t $IMAGE ./frontend
           docker push $IMAGE
-          # Construir URL del backend usando el patrón completo de Cloud Run
+          # Build backend URL using the full Cloud Run pattern
           BACKEND_URL="https://purchase-api-${{ secrets.GCP_PROJECT_ID }}.us-central1.run.app"
           echo "Backend URL: $BACKEND_URL"
           gcloud run deploy purchase-web --image $IMAGE --region us-central1 --allow-unauthenticated --set-env-vars BACKEND_URL=$BACKEND_URL
+          # Ensure public access to frontend
+          gcloud run services add-iam-policy-binding purchase-web --region us-central1 --member=allUsers --role=roles/run.invoker
