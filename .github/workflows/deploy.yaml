@@ -35,5 +35,7 @@ jobs:
           IMAGE=gcr.io/${{ secrets.GCP_PROJECT_ID }}/purchase-frontend:${{ github.sha }}
           docker build --no-cache -t $IMAGE ./frontend
           docker push $IMAGE
-          BACKEND_URL=$(gcloud run services describe purchase-api --region us-central1 --format 'value(status.url)')
+          # Construir URL del backend usando el patrón completo de Cloud Run
+          BACKEND_URL="https://purchase-api-${{ secrets.GCP_PROJECT_ID }}.us-central1.run.app"
+          echo "Backend URL: $BACKEND_URL"
           gcloud run deploy purchase-web --image $IMAGE --region us-central1 --allow-unauthenticated --set-env-vars BACKEND_URL=$BACKEND_URL
