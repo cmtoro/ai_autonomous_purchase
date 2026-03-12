@@ -11,6 +11,7 @@ import { environment } from '../environments/environment.prod';
 export class App {
   protected readonly title = signal('purchase-app');
   protected backendStatus = signal('unknown');
+  protected backendUrl = environment.apiUrl;
 
   constructor() {
     this.checkBackendStatus();
