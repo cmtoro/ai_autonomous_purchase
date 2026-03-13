@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:8000'
+  apiUrl: 'API_URL_PLACEHOLDER' // This will be replaced at runtime
 };
