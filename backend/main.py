@@ -26,11 +26,11 @@ inventory = [
     {"id": 2, "name": "Mouse", "price": 25.0}
 ]
 
-@app.get("/products")
+@app.get("/api/v1/products")
 def list_products():
     return inventory
 
-@app.post("/products")
+@app.post("/api/v1/products")
 def add_product(prod: Product):
     inventory.append(prod.dict())
     return {"status": "Product added."}
