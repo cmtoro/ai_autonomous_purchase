@@ -30,7 +30,7 @@ import { Product } from '../../models/product';
           <div *ngFor="let product of products()" class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
             <div class="p-6">
               <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ product.name }}</h3>
-              <p class="text-2xl font-bold text-electric-violet mb-4">${{ product.price.toFixed(2) }}</p>
+              <p class="text-2xl font-bold text-electric-violet mb-4">\${{ product.price.toFixed(2) }}</p>
               <button class="w-full bg-gradient-to-r from-electric-violet to-french-violet text-white py-2 px-4 rounded-md hover:from-french-violet hover:to-electric-violet transition-all duration-200 font-medium">
                 Ver detalles
               </button>
